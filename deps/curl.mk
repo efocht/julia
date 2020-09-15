@@ -9,12 +9,13 @@ $(BUILDDIR)/curl-$(CURL_VER)/build-configured: | $(build_prefix)/manifest/mbedtl
 endif
 
 ifneq ($(USE_BINARYBUILDER_CURL),1)
-CURL_LDFLAGS := $(RPATH_ESCAPED_ORIGIN)
+#CURL_LDFLAGS := $(RPATH_ESCAPED_ORIGIN)
+CURL_LDFLAGS := -Wl,-rpath,$(build_prefix)/lib
 
 # On older Linuces (those that use OpenSSL < 1.1) we include `libpthread` explicitly.
 # It doesn't hurt to include it explicitly elsewhere, so we do so.
 ifeq ($(OS),Linux)
-CURL_LDFLAGS += -lpthread
+CURL_LDFLAGS += -pthread
 endif
 
 $(SRCCACHE)/curl-$(CURL_VER).tar.bz2: | $(SRCCACHE)

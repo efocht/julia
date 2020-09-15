@@ -442,6 +442,10 @@ else
 ifeq ($(USEICC), 1)
 USEGCC := 0
 USECLANG := 0
+else
+ifeq ($(USENCC), 1)
+USEGCC := 0
+USECLANG := 0
 else  # default to gcc
 USEGCC := 1
 USECLANG := 0
@@ -449,11 +453,16 @@ USEICC := 0
 endif
 endif
 endif
+endif
 
 ifeq ($(USEIFC), 1)
 FC := ifort
 else
+ifeq ($(USENFORT), 1)
+FC := nfort
+else  # default to gfortran
 FC := $(CROSS_COMPILE)gfortran
+endif
 endif
 
 STDLIBCPP_FLAG :=
@@ -545,6 +554,22 @@ JCPPFLAGS :=
 JCXXFLAGS := -pipe $(fPIC) -fno-rtti
 DEBUGFLAGS := -O0 -g -DJL_DEBUG_BUILD -fstack-protector-all
 SHIPFLAGS := -O3 -g -falign-functions
+endif
+
+ifeq ($(USENCC),1)
+ifeq ($(USE_LIBCPP),1)
+$(error USE_LIBCPP only supported with clang. Try setting USE_LIBCPP=0)
+endif
+ifeq ($(SANITIZE),1)
+$(error Address Sanitizer only supported with clang. Try setting SANITIZE=0)
+endif
+CC  := ncc
+CXX := nc++
+JCFLAGS := -std=gnu11 $(fPIC) -finline-functions -D_FILE_OFFSET_BITS=64
+JCPPFLAGS :=
+JCXXFLAGS := $(fPIC) -finline-functions -finline-max-function-size=200
+DEBUGFLAGS := -O0 -g -DJL_DEBUG_BUILD
+SHIPFLAGS := -O3 -g 
 endif
 
 ifeq ($(USECCACHE), 1)
@@ -807,6 +832,11 @@ BINARY:=64
 MARCH=
 endif
 
+ifeq ($(ARCH),ve)
+BINARY:=64
+USE_SYSTEM_BLAS := 1
+endif
+
 # If we are running on powerpc64 or ppc64, fail out dramatically
 ifneq (,$(filter $(ARCH), powerpc64 ppc64))
 $(error Big-endian PPC64 is not supported, to ignore this error, set ARCH=ppc64le)
@@ -1011,8 +1041,20 @@ USE_SYSTEM_LAPACK := 0
 LIBBLAS := -L$(build_libdir) -lgfortblas
 LIBBLASNAME := libgfortblas
 else
+ifeq ($(ARCH),ve)
+#
+# SX-Aurora Tsubasa VE NLC libs
+#
+LIBBLAS ?= -L$(NLCDIR)/lib -lblas_openmp_i64
+LIBBLASNAME ?= libblas_openmp_i64
+USE_BLAS64 := 1
+USE_SYSTEM_LAPACK := 1
+LIBLAPACK ?= -L$(NLCDIR)/lib -llapack_i64
+LIBLAPACKNAME ?= liblapack_i64
+else
 LIBBLAS ?= -lblas
 LIBBLASNAME ?= libblas
+endif
 endif
 else
 LIBBLAS := -L$(build_shlibdir) -lopenblas

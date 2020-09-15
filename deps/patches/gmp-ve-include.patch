@@ -1,0 +1,18 @@
+--- a/gmp-6.1.2/gmp-h.in	2016-12-16 16:45:27.000000000 +0100
++++ b/gmp-h.in.nec.aurora	2019-07-05 09:45:33.000000000 +0200
+@@ -414,7 +414,15 @@
+    discard duplicate non-inlined copies, or if it doesn't then that's a
+    problem for everyone, not just GMP.  */
+ #if defined (__cplusplus) && ! defined (__GMP_EXTERN_INLINE)
++
+ #define __GMP_EXTERN_INLINE  inline
++
++
++#endif
++
++#if defined(__ve__) && !defined (__cplusplus)
++#undef __GMP_EXTERN_INLINE
++#define __GMP_EXTERN_INLINE static __inline__
+ #endif
+ 
+ /* Don't do any inlining within a configure run, since if the compiler ends

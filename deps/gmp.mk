@@ -8,6 +8,10 @@ ifeq ($(BUILD_OS),WINNT)
 GMP_CONFIGURE_OPTS += --srcdir="$(subst \,/,$(call mingw_to_dos,$(SRCCACHE)/gmp-$(GMP_VER)))"
 endif
 
+ifeq ($(ARCH),ve)
+GMP_CONFIGURE_OPTS += --disable-assembly --enable-cxx
+endif
+
 ifneq ($(USE_BINARYBUILDER_GMP),1)
 
 $(SRCCACHE)/gmp-$(GMP_VER).tar.bz2: | $(SRCCACHE)
@@ -23,6 +27,7 @@ $(SRCCACHE)/gmp-$(GMP_VER)/build-patched: $(SRCCACHE)/gmp-$(GMP_VER)/source-extr
 	cp $(SRCDIR)/patches/config.sub $(SRCCACHE)/gmp-$(GMP_VER)/configfsf.sub
 	cd $(dir $@) && patch < $(SRCDIR)/patches/gmp-exception.patch
 	cd $(dir $@) && patch -p1 < $(SRCDIR)/patches/gmp_alloc_overflow_func.patch
+	cd $(dir $@) && patch -p1 < $(SRCDIR)/patches/gmp-ve-include.patch
 	echo 1 > $@
 
 $(SRCCACHE)/gmp-$(GMP_VER)/gmp-config-ldflags.patch-applied: | $(SRCCACHE)/gmp-$(GMP_VER)/build-patched
@@ -34,6 +39,8 @@ $(BUILDDIR)/gmp-$(GMP_VER)/build-configured: $(SRCCACHE)/gmp-$(GMP_VER)/gmp-conf
 $(BUILDDIR)/gmp-$(GMP_VER)/build-configured: $(SRCCACHE)/gmp-$(GMP_VER)/source-extracted
 	mkdir -p $(dir $@)
 	cd $(dir $@) && \
+	env CFLAGS="-v -O3 -finline-functions -finline-max-function-size=100000" \
+	CXXFLAGS="-v -O3 -finline-functions -finline-max-function-size=100000" \
 	$(dir $<)/configure $(CONFIGURE_COMMON) F77= --enable-shared --disable-static $(GMP_CONFIGURE_OPTS)
 	echo 1 > $@
 

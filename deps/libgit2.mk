@@ -42,11 +42,16 @@ ifneq (,$(findstring $(OS),Linux FreeBSD))
 LIBGIT2_OPTS += -DUSE_HTTPS="mbedTLS" -DSHA1_BACKEND="CollisionDetection" -DCMAKE_INSTALL_RPATH="\$$ORIGIN"
 endif
 
+ifeq ($(ARCH),ve)
+LIBGIT2_OPTS += -DCMAKE_SIZEOF_VOID_P=8
+endif
+
 LIBGIT2_SRC_PATH := $(SRCCACHE)/$(LIBGIT2_SRC_DIR)
 
 $(LIBGIT2_SRC_PATH)/libgit2-agent-nonfatal.patch-applied: $(LIBGIT2_SRC_PATH)/source-extracted
 	cd $(LIBGIT2_SRC_PATH) && \
 		patch -p1 -f < $(SRCDIR)/patches/libgit2-agent-nonfatal.patch
+		patch -p1 -f < $(SRCDIR)/patches/libgit2-no-gcc-intrinsics.patch
 	echo 1 > $@
 
 $(BUILDDIR)/$(LIBGIT2_SRC_DIR)/build-configured: \

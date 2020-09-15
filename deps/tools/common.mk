@@ -6,7 +6,9 @@
 
 CONFIGURE_COMMON := --prefix=$(abspath $(build_prefix)) --build=$(BUILD_MACHINE) --libdir=$(abspath $(build_libdir)) --bindir=$(abspath $(build_depsbindir)) $(CUSTOM_LD_LIBRARY_PATH)
 ifneq ($(XC_HOST),)
+ifneq ($(ARCH),ve)
 CONFIGURE_COMMON += --host=$(XC_HOST)
+endif
 endif
 ifeq ($(OS),WINNT)
 ifneq ($(USEMSVC), 1)
