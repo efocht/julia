@@ -239,8 +239,6 @@ JL_DLLEXPORT extern jl_call_t jl_fptr_const_return;
 JL_DLLEXPORT extern jl_call_t jl_fptr_sparam;
 typedef jl_value_t *(*jl_fptr_sparam_t)(jl_value_t*, jl_value_t**, uint32_t, jl_svec_t*);
 
-JL_DLLEXPORT extern jl_call_t jl_fptr_interpret_call;
-
 JL_EXTENSION typedef union {
     void* fptr;
     jl_fptr_args_t fptr1;
@@ -374,6 +372,8 @@ typedef struct _jl_code_instance_t {
     jl_callptr_t invoke; // jlcall entry point
     jl_generic_specptr_t specptr; // private data for `jlcall entry point`
 } jl_code_instance_t;
+
+JL_DLLEXPORT extern jl_value_t *jl_fptr_interpret_call(jl_value_t *f, jl_value_t **args, uint32_t nargs, jl_code_instance_t *codeinst);
 
 // all values are callable as Functions
 typedef jl_value_t jl_function_t;
