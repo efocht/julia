@@ -1,6 +1,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#ifdef __ve__
+#include <libgen.h>
+#include <limits.h>
+#endif
 #include "flisp.h"
 #include "opcodes.h"
 
@@ -40,6 +44,11 @@ int main(int argc, char *argv[])
     fl_context_t *fl_ctx = &fl_global_ctx;
 
     fl_init(fl_ctx, 512*1024);
+
+#ifdef __ve__
+    realpath(argv[0], fname_buf);
+    setc(symbol(fl_ctx, "*install-dir*"), cvalue_static_cstring(fl_ctx, strdup(dirname(fname_buf))));
+#endif
 
     fname_buf[0] = '\0';
     value_t str = symbol_value(symbol(fl_ctx, "*install-dir*"));

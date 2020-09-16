@@ -12,6 +12,11 @@ endif
 ifeq ($(USEICC), 1)
 UV_CFLAGS += -static-intel
 endif
+ifeq ($(ARCH),ve)
+ifeq ($(USECLANG), 1)
+UV_CFLAGS += -DBUILDING_UV_SHARED --target=ve-linux
+endif
+endif
 
 UV_FLAGS := LDFLAGS="$(LDFLAGS) $(CLDFLAGS) -v"
 ifneq ($(UV_CFLAGS),)

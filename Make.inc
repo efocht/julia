@@ -517,12 +517,18 @@ endif
 ifeq ($(USECLANG),1)
 CC := $(CROSS_COMPILE)clang
 CXX := $(CROSS_COMPILE)clang++
-JCFLAGS := -std=gnu99 -pipe $(fPIC) -fno-strict-aliasing -D_FILE_OFFSET_BITS=64
 # AArch64 needs this flag to generate the .eh_frame used by libunwind
 JCPPFLAGS := -fasynchronous-unwind-tables
-JCXXFLAGS := -pipe $(fPIC) -fno-rtti -pedantic
+ifeq ($(ARCH),ve)
+JCFLAGS := --target=ve-linux -std=gnu99 -pipe $(fPIC) -fno-strict-aliasing -D_FILE_OFFSET_BITS=64
+JCXXFLAGS := --target=ve-linux -pipe $(fPIC) -fno-rtti -pedantic
+else
+JCFLAGS := --target=ve-linux -std=gnu99 -pipe $(fPIC) -fno-strict-aliasing -D_FILE_OFFSET_BITS=64
+JCXXFLAGS := --target=ve-linux -pipe $(fPIC) -fno-rtti -pedantic
+endif
 DEBUGFLAGS := -O0 -g -DJL_DEBUG_BUILD -fstack-protector-all
-SHIPFLAGS := -O3 -g
+#SHIPFLAGS := -O3 -g
+SHIPFLAGS := -O0 -g
 ifeq ($(OS), Darwin)
 ifeq ($(USE_LIBCPP), 1)
 MACOSX_VERSION_MIN := 10.8
@@ -556,6 +562,7 @@ DEBUGFLAGS := -O0 -g -DJL_DEBUG_BUILD -fstack-protector-all
 SHIPFLAGS := -O3 -g -falign-functions
 endif
 
+ifeq ($(ARCH),ve)
 ifeq ($(USENCC),1)
 ifeq ($(USE_LIBCPP),1)
 $(error USE_LIBCPP only supported with clang. Try setting USE_LIBCPP=0)
@@ -570,6 +577,7 @@ JCPPFLAGS :=
 JCXXFLAGS := $(fPIC) -finline-functions -finline-max-function-size=200
 DEBUGFLAGS := -O0 -g -DJL_DEBUG_BUILD
 SHIPFLAGS := -O3 -g 
+endif
 endif
 
 ifeq ($(USECCACHE), 1)
@@ -958,10 +966,16 @@ LIBUNWIND:=
 else
 ifeq ($(USE_SYSTEM_LIBUNWIND), 1)
 ifneq ($(OS),Darwin)
+ifeq ($(ARCH),ve)
+LIBUNWIND:=-L/usr/local/ve/libunwind/lib -lunwind
+JCFLAGS+=-DSYSTEM_LIBUNWIND -I/usr/local/ve/libunwind/include
+JCPPFLAGS+=-DSYSTEM_LIBUNWIND -I/usr/local/ve/libunwind/include
+else
 LIBUNWIND:=-lunwind
 # Only for linux since we want to use not yet released libunwind features
 JCFLAGS+=-DSYSTEM_LIBUNWIND
 JCPPFLAGS+=-DSYSTEM_LIBUNWIND
+endif
 endif
 else
 ifeq ($(OS),Darwin)
